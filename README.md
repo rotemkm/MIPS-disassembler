@@ -1,0 +1,1 @@
+A simple MIPS instruction disassembler in C that decodes 32-bit binary instructions into human-readable assembly.
