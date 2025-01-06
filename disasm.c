@@ -1,5 +1,12 @@
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+#define WRONG_AGRUMENTS -1
+#define CANNOT_OPEN_FILE -2
+#define CANNOT_CLOSE_FILE -3
 
 static const char *r_funct_codes[] = {
 	[0x20] = "add", [0x21] = "addu", [0x24] = "and", [0x1A] = "div",
@@ -113,8 +120,46 @@ static void disassemble(uint32_t instruction)
 	}
 }
 
-int main(void)
+int process_instructions(FILE *fp) 
 {
+    uint32_t instruction;
+
+    while (fread(&instruction, sizeof(uint32_t), 1, fp) == 1) {
+        disassemble(instruction);
+    }
+
+    return 0;
+}
+
+int load_file(char * file_name)
+{
+    FILE * fp = NULL;
+    fp = fopen(file_name, "r");
+
+    if(!fp){
+        printf("Couldn't open %s.\n", file_name);
+        return CANNOT_OPEN_FILE;
+    }
+
+    process_instructions(fp);
+
+    if(fclose(fp) != 0){
+        printf("Couldn't close %s.\n", file_name);
+        return CANNOT_CLOSE_FILE;
+    }
+ 
+    return 0;
+}
+
+int main(int argc, char ** argv)
+{
+	if (argc < 2) {
+        fprintf(stderr, "Usage: %s <elf-file>\n", argv[0]);
+        return WRONG_AGRUMENTS;
+    }
+
+	load_file(argv[1]);
+
 	/* Test with an example instruction (MIPS `sw $t0, 8($t1)`) */
 	uint32_t test_instruction = 0xAD200008;
 
